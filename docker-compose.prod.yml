@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database (Production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: lenxo_postgres_prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lenxo_network_prod
+    restart: always
+
+  # NestJS Backend (Production)
+  backend:
+    image: lenxo-backend:latest
+    container_name: lenxo_backend_prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "${BACKEND_PORT}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lenxo_network_prod
+    restart: always
+    # No volume mounts in production
+
+volumes:
+  postgres_data_prod:
+    driver: local
+
+networks:
+  lenxo_network_prod:
+    driver: bridge

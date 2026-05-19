@@ -1,0 +1,19 @@
+# Docker build context exclusions
+node_modules
+npm-debug.log
+dist
+build
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+.DS_Store
+coverage
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.next
+out
